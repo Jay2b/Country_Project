@@ -1,9 +1,9 @@
-import { useState, useEffect, use} from 'react'
+import { useState, useEffect} from 'react'
 
 import './App.css'
 
 function App() {
- 
+
   const [countries, setCountries] = useState([]);
   const [text, setText] = useState("");
   const [places, setPlaces] = useState([]);
@@ -14,6 +14,9 @@ function App() {
       .then(data => setCountries(data))
   }, []);
 
+    const filteredCountries =  countries.filter(country => country.name.common.toLowerCase().includes(text.toLowerCase()));
+
+    
   const addToList = () => {
       
     const newPlaces = [...places, text];
@@ -31,13 +34,12 @@ function App() {
         <li key = {place}>{place}</li>
        ))} 
        </ul>
-      <ul>{countries.map(country => (
-        <li key={country.name.common}>
+       {text.length > 0 ? <ul>{filteredCountries.map(country => (
+        <li key={country.name.common} onClick = {() => setText(country.name.common)}>
           {country.name.common}
         </li>
       ))}
-
-      </ul>
+      </ul> : null}
     </div>
   )
 }
