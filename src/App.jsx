@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-
 import "./App.css";
+import PlacesList from "./PlacesList";
+import CountryDropdown from "./CountryDropdown";
+import CountryInput from "./CountryInput";
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [text, setText] = useState("");
   const [places, setPlaces] = useState([]);
+  const [duplicateError, setDuplicateError] = useState(false);
 
   useEffect(() => {
     fetch("https://restcountries.com/v3.1/all?fields=name,flags")
@@ -16,17 +19,23 @@ function App() {
   const filteredCountries = countries.filter((country) =>
     country.name.common.toLowerCase().includes(text.toLowerCase())
   );
-  const duplicates = places.some(
-    (place) => place.name.common.toLowerCase() === text.toLowerCase()
-  );
 
   const addToList = (country) => {
-    const newPlaces = [...places, country];
     if (!country) return;
-    if (duplicates) return;
 
-    setPlaces(newPlaces);
+    const isDuplicate = places.some(
+      (place) =>
+        place.name.common.toLowerCase() === country.name.common.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setDuplicateError(true);
+      return;
+    }
+
+    setPlaces([...places, country]);
     setText("");
+    setDuplicateError(false);
   };
 
   const removePlace = (placeToRemove) => {
@@ -36,48 +45,36 @@ function App() {
     setPlaces(newPlaces);
   };
 
+  const handleTextChange = (value) => {
+    setText(value);
+    setDuplicateError(false);
+  };
+
+  const handleSubmit = () => {
+    const country = countries.find(
+      (c) => c.name.common.toLowerCase() === text.toLowerCase()
+    );
+
+    if (!country) return;
+
+    addToList(country);
+  };
+
   return (
     <div>
-      <h1>Countries List</h1>
-      <input
-        type='text'
-        onChange={(e) => setText(e.target.value)}
+      <CountryInput
         value={text}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            addToList(filteredCountries[0]);
-          }
-        }}
+        onChange={handleTextChange}
+        onSubmit={handleSubmit}
+        duplicateError={duplicateError}
       />
-      <button onClick={() => addToList(filteredCountries[0])}>
-        Add to list{" "}
-      </button>
-      {duplicates ? <p>Country is already added to the list</p> : null}
-      {text.length === 0 && places.length === 0 ? (
-        <p>List is empty! Add something!!</p>
-      ) : null}
-      <ul>
-        {places.map((place) => (
-          <li key={place.name.common}>
-            <img src={place.flags.png} width='24' />
-            {place.name.common}
-            <button onClick={() => removePlace(place.name.common)}>X</button>
-          </li>
-        ))}
-      </ul>
+
+      <PlacesList places={places} removePlace={removePlace} />
       {text.length > 0 ? (
-        <ul>
-          {filteredCountries.slice(0, 10).map((country) => (
-            <li key={country.name.common} onClick={() => addToList(country)}>
-              <img
-                src={country.flags.png}
-                width='20'
-                alt={country.name.common}
-              />
-              {country.name.common}
-            </li>
-          ))}
-        </ul>
+        <CountryDropdown
+          countries={filteredCountries}
+          onCountrySelect={addToList}
+        />
       ) : null}
     </div>
   );
