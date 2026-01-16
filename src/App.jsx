@@ -61,21 +61,24 @@ function App() {
   };
 
   return (
-    <div>
-      <CountryInput
-        value={text}
-        onChange={handleTextChange}
-        onSubmit={handleSubmit}
-        duplicateError={duplicateError}
-      />
-
-      <PlacesList places={places} removePlace={removePlace} />
-      {text.length > 0 ? (
-        <CountryDropdown
-          countries={filteredCountries}
-          onCountrySelect={addToList}
+    <div className='min-h-screen bg-zinc-400 flex justify-center py-10'>
+      <div className='w-full max-w-md bg-zinc-200 rounded-xl shadow-md p-6 space-y-6'>
+        <CountryInput
+          value={text}
+          onChange={handleTextChange}
+          onSubmit={handleSubmit}
+          duplicateError={duplicateError}
         />
-      ) : null}
+
+        {text.length > 0 && (
+          <CountryDropdown
+            countries={filteredCountries}
+            onCountrySelect={addToList}
+          />
+        )}
+
+        <PlacesList places={places} removePlace={removePlace} />
+      </div>
     </div>
   );
 }
